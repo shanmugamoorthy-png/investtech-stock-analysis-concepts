@@ -29,3 +29,6 @@ Caveats: overlapping windows make samples correlated; a handful of large stocks 
 
 ## Easy mode (no coding)
 `python make_symbols.py` builds `symbols.csv` from `large_caps.txt` by looking up each stock in Dhan's public instrument list, so you don't need security IDs. Edit `large_caps.txt` (one NSE symbol per line) to change the list; names it can't find are printed. The list is a set of well-known large caps, not a guaranteed current NIFTY 50 membership.
+
+### Pre-specified tests
+`backtest.py` also prints two tests chosen in advance from Investtech's articles (A: rising trend with price in the lower fifth of the channel; B: volume balance above 40, and its mirror below -40), next to an "all samples" baseline. Only differences from the baseline matter. Don't add variations until one looks good: that finds patterns that fail later.

@@ -26,9 +26,11 @@ def signals(df: pd.DataFrame, step: int, horizon: int) -> pd.DataFrame:
     for i in range(WINDOW, len(df) - horizon, step):
         hist = df.iloc[: i + 1]  # no lookahead
         t = trend_channel(hist["close"], window=WINDOW)
-        label = read(t, volume_balance(hist))
+        vb = volume_balance(hist)
+        label = read(t, vb)
         fwd = df["close"].iloc[i + horizon] / df["close"].iloc[i] - 1
         rows.append({"date": df.index[i], "label": label, "fwd": fwd,
+                     "direction": t["direction"], "pos": t["channel_pos"], "vb": vb,
                      "end": df.index[i + horizon]})
     return pd.DataFrame(rows)
 
@@ -73,6 +75,23 @@ def main():
                                  hit_rate_pct=("excess", lambda x: (x > 0).mean() * 100)).round(1)
     print(f"Forward {a.horizon}-bar return vs {a.benchmark}, sampled every {a.step} bars")
     print(g.sort_values("avg_excess_pct", ascending=False).to_string())
+
+    # Two tests fixed in advance (from Investtech's articles), compared with ALL samples.
+    tests = {
+        "baseline: all samples": res.index == res.index,
+        "A: rising trend + near floor (pos<0.2)": ((res["direction"] == "rising") & (res["pos"] < 0.2)).to_numpy(),
+        "B: volume balance > 40": (res["vb"] > 40).to_numpy(),
+        "B': volume balance < -40": (res["vb"] < -40).to_numpy(),
+    }
+    rows = []
+    for name, m in tests.items():
+        x = res[m]
+        rows.append({"test": name, "n": len(x), "avg_fwd_pct": x["fwd"].mean() * 100,
+                     "avg_excess_pct": x["excess"].mean() * 100,
+                     "hit_rate_pct": (x["excess"] > 0).mean() * 100})
+    print("\nPre-specified tests vs baseline")
+    print(pd.DataFrame(rows).round(1).to_string(index=False))
+    print("\nOnly differences from the baseline row matter; overlapping windows make small gaps meaningless.")
 
 
 if __name__ == "__main__":
