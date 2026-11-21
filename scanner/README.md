@@ -52,3 +52,6 @@ Why this does not settle the question:
 - No costs, slippage or taxes; only 30 stocks; one market and period.
 
 Use the scanner as a chart-reading summary, not as a signal generator. Not investment advice.
+
+## Daily watchlist
+`python watchlist.py` scans, saves a dated snapshot in `history/` and prints what changed since the previous snapshot (trend changes, channel position changes, new 60-day range breaks). In Google Colab, keep history in Drive so it survives: `--history-dir /content/drive/MyDrive/watchlist` after `drive.mount`. This is a chart-reading summary; see the results section above before reading anything into it.

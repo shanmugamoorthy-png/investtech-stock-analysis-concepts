@@ -49,3 +49,15 @@ def test_backtest_has_no_lookahead():
     df2.loc[df2.index[cut:], ["close", "high", "low"]] *= 5
     changed = signals(df2, 20, 66)
     assert base.loc[0, "label"] == changed.loc[0, "label"]
+
+
+def test_watchlist_changes_and_zone():
+    import pandas as pd
+    from watchlist import changes, zone
+    assert zone(1.2) == "above channel" and zone(0.9) == "near ceiling" and zone(0.1) == "near floor"
+    base = dict(symbol="X", trend="falling", zone="middle", break_60d="none")
+    old = pd.DataFrame([base])
+    new = pd.DataFrame([{**base, "trend": "sideways", "zone": "near ceiling", "break_60d": "break up (weak volume)"}])
+    out = changes(old, new)
+    assert len(out) == 1 and "falling -> sideways" in out[0] and "near ceiling" in out[0]
+    assert changes(old, old) == []
