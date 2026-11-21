@@ -115,10 +115,15 @@
   "category": "Price structure",
   "name": "Trend and trend channels",
   "summary": "Direction of price movement, e.g. a rising trend channel.",
-  "url": "https://www.investtech.com",
+  "url": "https://www.investtech.com/main/market.php?CountryID=992&p=staticPage&fn=helpResearchTrend",
   "details": [
-   "Trend is the prevailing price direction and, per Investtech, the most important input to the technical score.",
-   "Shown as a channel with a floor and ceiling; entering or leaving it generates trend signals."
+   "Investtech draws one trend per chart: it scores roughly 80,000 candidate trends on an 18-month chart each day and keeps the best. A good trend is judged by how dense it is, how far prices stray from the regression line, and how many price points sit near the channel floor and ceiling.",
+   "A strong rising channel is long and narrow, rises at a moderate angle, touches both lines several times, fluctuates evenly and has a recent close near or inside it. Because the trend is recomputed daily, price can briefly poke out of the channel and return.",
+   "Trade by type: rising trend = buy and hold (rising trends often last longer than expected); falling trend = sell and avoid buying; sideways = buy near the floor, sell near the ceiling.",
+   "Near the ceiling (upper fifth) breakout odds and pullback risk both rise; near the floor (lower fifth) upside is bigger but so is the risk of a break. The score itself does not change with position in the channel.",
+   "Warnings in a rising trend: volume falling as price rises, volume rising as price falls, or price near the floor with flat resistance and weak volume. Overbought RSI near resistance can signal a short pullback.",
+   "Breaks: a rising trend breaking down on neutral or falling volume is often passive selling; on rising volume it may be an early sell, confirmed below the previous bottom, and scores half of a rising trend. Falling trends mirror this. A sideways channel breaking up is a buy, stronger if prior tops are cleared on rising volume.",
+   "Investtech's Nordic study (2008-2020, 66-day annualised): rising trend +6.5 points excess return, falling trend -5.8, rising trend breaking up +9.8, falling trend breaking down -9.2, horizontal break up +19.1. These are Investtech's own figures."
   ],
   "fullRead": true
  },
@@ -126,10 +131,15 @@
   "category": "Price structure",
   "name": "Support and resistance",
   "summary": "Price levels where a stock may stall, reverse or break through.",
-  "url": "https://www.investtech.com",
+  "url": "https://www.investtech.com/main/market.php?CountryID=993&p=staticPage&fn=helpResearchSupportAndResistance",
   "details": [
-   "Price levels where buying or selling pressure tends to halt a move; a break of such a level can start a new move.",
-   "One of the inputs to the technical score."
+   "Support is a level where buyers are expected to outnumber sellers; resistance is where sellers should outnumber buyers. Support is always below the current price and resistance above. Charts show support in green and resistance in red, with one to three stars for strength.",
+   "Levels are found daily from pivot points (tops and bottoms), zones of high accumulated volume, and round numbers. Strength is scored partly by how many earlier turning points cluster near the level.",
+   "Why they work: investors see a stock as cheap or expensive at a level, remember it turning there before, or anchor on round figures.",
+   "Basic use: buy near support, sell near resistance; buy a break up through resistance and sell a break down through support. Avoid orders exactly on a level, since price often stops just short.",
+   "Breaks are most reliable on rising volume. Breaks against the trend often fail (up in a falling trend, down in a rising trend), so prefer breaks of strong, long-term levels on high volume.",
+   "Context: levels matter most in sideways markets. In a rising trend, trend beats levels (holding near resistance is fine); in a falling trend avoid buying at support. Price in the middle between levels gives no signal.",
+   "Investtech's Nordic signals (2008-2020), annualised excess return: price above support +10.1 points, break up through resistance +4.1, near resistance +0.4, near support -0.7, break down through support -2.8, price below resistance -7.1. Investtech's own figures."
   ],
   "fullRead": true
  },
@@ -137,10 +147,13 @@
   "category": "Price structure",
   "name": "Price patterns",
   "summary": "Chart formations used to read investor direction.",
-  "url": "https://www.investtech.com",
+  "url": "https://www.investtech.com/main/market.php?CountryID=100&p=staticPage&fn=helpResearchFormations",
   "details": [
-   "Chart formations (for example rectangles) read as signs of which way most investors are moving.",
-   "Each carries a quality score (0-100), and the objective gives a reference target."
+   "Investtech software identifies formations automatically and plots them; each has a quality (0-100 similarity to an ideal pattern) and an objective (target price).",
+   "Top formations such as head and shoulders, double top and rectangle warn that a rising trend is ending (a sell signal). Continuation formations such as the rectangle warn that a consolidation is over and the existing trend is likely to resume.",
+   "Rectangle: price moves between roughly horizontal support and resistance. A break up through resistance is a buy; the target is the resistance level plus the rectangle's height, ideally reached within a time equal to the formation's length. Psychology: sellers at the ceiling are exhausted once it breaks.",
+   "Investtech's Oslo study (629 rectangle buy signals, 1996-2004): 67% reached the target within the formation's length; 53% within half of it. Smaller formations succeeded more often. It measures hit rate, not trading profit. Formations under 2% high and illiquid stocks were excluded.",
+   "Investtech reports that rectangle buy signals are robust (hit rate near 70%), while head and shoulders and short-term double tops/bottoms showed weaker predictive power. These are Investtech's own studies."
   ],
   "fullRead": true
  },
@@ -148,10 +161,13 @@
   "category": "Price structure",
   "name": "Volume",
   "summary": "Trading volume as confirmation of price moves.",
-  "url": "https://www.investtech.com",
+  "url": "https://www.investtech.com/main/market.php?CountryID=1000&p=staticPage&fn=helpResearchVolume",
   "details": [
-   "Shares traded, used to judge how strong a price move is. Part of the technical score and used in candlestick and pivot-point confirmation.",
-   "The Volume Balance (VolBal, 22-day) compares volume with price movement."
+   "Volume is a confirmation tool: do trend analysis first, then use volume to confirm or contradict it. Trend, support/resistance and pattern signals are much weaker without volume confirmation.",
+   "Volume balance measures buyer vs seller aggression. High volume on up days with low volume on down days is positive and strengthens buy signals or confirms a rising trend; the reverse is negative. It is short-term and noisy.",
+   "Price/volume correlation: in a healthy uptrend volume is high on rallies and tops and low on dips and bottoms. Volume that falls in the trend's direction warns of a possible break. A sharp surge on very high volume after a long rise may be a final rally; a sharp fall on very high volume in a downtrend may be capitulation.",
+   "Combine: buy when trend and volume are both positive and hold if both stay positive; if trend is positive but volume negative, watch closely; with negative volume, wait or look elsewhere.",
+   "Investtech's Nordic study (2008-2020, 66-day annualised): positive medium-term volume balance +1.8 points excess return (44,054 signals), negative -3.8 (24,530). A separate study found stocks with volume balance above about 40 tended to keep performing. Investtech's own figures."
   ],
   "fullRead": true
  },
@@ -199,7 +215,7 @@
   "summary": "Compare a stock's price development with other securities.",
   "url": "https://www.investtech.com/main/market.php?CountryID=100&product=44&fn=/uk/comparehelp_000.phtm",
   "details": [
-   "Compares a stock's price development with other securities. The help page for this one was not read."
+   "Compares a stock's price development with about 30,000 other stocks, commodities and indices. Listed from the Professional tier up."
   ],
   "fullRead": false
  },
@@ -231,7 +247,7 @@
   "summary": "A selected technically positive stock.",
   "url": "https://www.investtech.com",
   "details": [
-   "A selected technically positive stock. No help page was found."
+   "A selected technically positive stock, available on all Investtech subscription tiers (per the pricing page)."
   ],
   "fullRead": false
  },
@@ -241,7 +257,7 @@
   "summary": "Daily automated evaluations.",
   "url": "https://www.investtech.com",
   "details": [
-   "Daily automated evaluations. No help page was found."
+   "Daily evaluations from Investtech's automated analysis system. Listed from the Trader subscription up on the pricing page."
   ],
   "fullRead": false
  },
@@ -251,7 +267,7 @@
   "summary": "Notifications when a stock reaches a set price.",
   "url": "https://www.investtech.com",
   "details": [
-   "Notifications when a stock reaches a set price. No help page was found."
+   "Notifications when a stock reaches a set price. Included on all subscription tiers per the pricing page."
   ],
   "fullRead": false
  },
@@ -272,6 +288,17 @@
   "url": "https://www.investtech.com",
   "details": [
    "Includes a Technical Analysis User Course (January 2025). Not read."
+  ],
+  "fullRead": false
+ },
+ {
+  "category": "Signals and indicators",
+  "name": "Early warning",
+  "summary": "Shows the price levels that would trigger the next day's buy and sell signals.",
+  "url": "https://www.investtech.com",
+  "details": [
+   "Investtech calculates the signal levels in advance so you can see what price move would trigger tomorrow's signals.",
+   "Described on Investtech's stock pages; its own help page was not read."
   ],
   "fullRead": false
  }
