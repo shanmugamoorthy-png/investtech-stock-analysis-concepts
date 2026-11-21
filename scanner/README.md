@@ -32,3 +32,23 @@ Caveats: overlapping windows make samples correlated; a handful of large stocks 
 
 ### Pre-specified tests
 `backtest.py` also prints two tests chosen in advance from Investtech's articles (A: rising trend with price in the lower fifth of the channel; B: volume balance above 40, and its mirror below -40), next to an "all samples" baseline. Only differences from the baseline matter. Don't add variations until one looks good: that finds patterns that fail later.
+
+## Results so far (read before relying on this)
+Backtest run on 30 large-cap NSE stocks, about 10 years of Dhan daily data, 66-trading-day forward return vs NIFTY 50, sampled every 5 bars (12,240 cases).
+
+| Test | Cases | Avg excess vs NIFTY (pts) | Hit rate |
+|---|---|---|---|
+| Baseline: all samples | 12,240 | +1.4 | 50.6% |
+| A: rising trend + price in lower fifth of channel | 1,877 | +1.5 | 52.3% |
+| B: volume balance > 40 | 1,042 | +2.0 | 49.1% |
+| B': volume balance < -40 | 461 | +2.0 | 53.6% |
+
+**Conclusion: no usable edge found.** Neither pre-specified test beat the baseline in a way that stands out from noise, and the mirror test (B') did as well as B, the opposite of what the volume theory predicts. The "trend + volume negative" label even had the highest average excess return, again opposite to theory.
+
+Why this does not settle the question:
+- The indicators here are my simplified approximations, not Investtech's algorithms, so this says little about Investtech's own methods.
+- Survivorship bias: the stocks are large caps chosen today, which flatters every row.
+- Overlapping windows make the cases highly correlated; rough effective sample size is far smaller than the counts shown.
+- No costs, slippage or taxes; only 30 stocks; one market and period.
+
+Use the scanner as a chart-reading summary, not as a signal generator. Not investment advice.
