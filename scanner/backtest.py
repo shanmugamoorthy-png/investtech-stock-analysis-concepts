@@ -11,6 +11,7 @@ Usage:
 """
 import argparse
 import os
+import time
 
 import pandas as pd
 
@@ -45,8 +46,13 @@ def main():
     rows = list(pd.read_csv(a.symbols, dtype=str).itertuples())
     data = {}
     for r in rows:
-        data[r.symbol] = (load_csv(os.path.join(a.csv_dir, f"{r.symbol}.csv"))
-                          if a.csv_dir else fetch_dhan(r, days=3650))
+        try:
+            data[r.symbol] = (load_csv(os.path.join(a.csv_dir, f"{r.symbol}.csv"))
+                              if a.csv_dir else fetch_dhan(r, days=3650))
+        except Exception as e:
+            print(f"{r.symbol}: skipped ({e})")
+        if not a.csv_dir:
+            time.sleep(1)
     bench = data[a.benchmark]["close"]
 
     out = []

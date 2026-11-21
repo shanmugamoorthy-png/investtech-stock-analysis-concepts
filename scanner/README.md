@@ -26,3 +26,6 @@ Offline mode: `python dhan_scanner.py --csv-dir ./candles` with `<symbol>.csv` f
 `python backtest.py` (or `--csv-dir ./candles`; needs a `NIFTY 50` series as benchmark). It steps through history, computes each label using only past data (a test checks there is no lookahead), then compares the next 66 trading days' return with NIFTY's over the same dates, grouped by label.
 
 Caveats: overlapping windows make samples correlated; a handful of large stocks is a tiny sample; no costs, slippage or survivorship adjustment; indicators are simplified. Treat results as a rough sanity check, not proof. Output on synthetic data is meaningless by construction.
+
+## Easy mode (no coding)
+`python make_symbols.py` builds `symbols.csv` from `large_caps.txt` by looking up each stock in Dhan's public instrument list, so you don't need security IDs. Edit `large_caps.txt` (one NSE symbol per line) to change the list; names it can't find are printed. The list is a set of well-known large caps, not a guaranteed current NIFTY 50 membership.

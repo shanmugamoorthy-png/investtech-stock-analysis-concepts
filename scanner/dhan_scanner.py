@@ -81,8 +81,10 @@ def main():
             time.sleep(1)  # be gentle with rate limits
     res = pd.DataFrame(out)
     res.to_csv(a.out, index=False)
-    with pd.option_context("display.width", 200, "display.max_columns", 20):
-        print(res.to_string(index=False))
+    show = ["symbol", "last_close", "trend", "channel_pos", "vol_balance", "60d_break", "read"]
+    with pd.option_context("display.width", 250, "display.max_columns", 20, "display.max_colwidth", 60):
+        print(res[show].to_string(index=False))
+    print(f"\nFull details saved to {a.out}")
 
 
 if __name__ == "__main__":
