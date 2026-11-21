@@ -6,7 +6,7 @@ from trades import clean, round_trips
 
 def T(i, side, qty, price, time, sid="1", chg=0.0, opt="CALL"):
     return {"exchangeTradeId": str(i), "orderId": str(i), "transactionType": side, "tradedQuantity": qty,
-            "tradedPrice": price, "exchangeTime": time, "securityId": sid, "tradingSymbol": "NIFTY-X",
+            "tradedPrice": price, "exchangeTime": time, "securityId": sid, "customSymbol": "NIFTY 25800 CE",
             "drvOptionType": opt, "drvStrikePrice": 25800, "brokerageCharges": chg, "instrument": "DERIVATIVES"}
 
 
@@ -43,3 +43,16 @@ def test_duplicates_dropped_and_summary():
     assert s["payoff_ratio"] == 2.0 and s["longest_losing_streak"] == 1
     r = revenge_check(rt)
     assert r["quick_after_loss_trades"] == 1  # second trade opened 5 min after a loss
+
+
+def test_works_without_tradingsymbol_column():
+    rt, op = rts([T(1, "BUY", 75, 100, "2026-11-20 09:30:00"), T(2, "SELL", 75, 110, "2026-11-20 10:00:00")])
+    assert rt.loc[0, "symbol"] == "NIFTY 25800 CE"
+
+
+def test_symbol_falls_back_to_security_id():
+    rows = [T(1, "BUY", 75, 100, "2026-11-20 09:30:00"), T(2, "SELL", 75, 110, "2026-11-20 10:00:00")]
+    for r in rows:
+        r.pop("customSymbol")
+    rt, _ = rts(rows)
+    assert rt.loc[0, "symbol"] == "1"

@@ -5,8 +5,12 @@ import time
 from collections import deque
 from datetime import date, timedelta
 
+import warnings
+
 import pandas as pd
 import requests
+
+warnings.filterwarnings("ignore", message="Could not infer format")
 
 BASE = "https://api.dhan.co/v2/trades"
 CHARGE_COLS = ["sebiTax", "stt", "brokerageCharges", "serviceTax", "exchangeTransactionCharges", "stampDuty"]
@@ -45,6 +49,11 @@ def clean(df: pd.DataFrame) -> pd.DataFrame:
     for c in CHARGE_COLS:
         df[c] = pd.to_numeric(df[c], errors="coerce").fillna(0.0) if c in df else 0.0
     df["charges"] = df[CHARGE_COLS].sum(axis=1)
+    sym = pd.Series("", index=df.index, dtype=object)
+    for c in ("tradingSymbol", "customSymbol", "symbol"):
+        if c in df:
+            sym = sym.where(sym != "", df[c].fillna("").astype(str).replace("NA", ""))
+    df["symbol"] = sym.where(sym != "", df["securityId"].astype(str))
     df["tradedQuantity"] = pd.to_numeric(df["tradedQuantity"], errors="coerce")
     df["tradedPrice"] = pd.to_numeric(df["tradedPrice"], errors="coerce")
     t = pd.Series(pd.NaT, index=df.index, dtype="datetime64[ns]")
@@ -71,7 +80,7 @@ def round_trips(df: pd.DataFrame):
             gross = (t["tradedPrice"] - lot["price"]) * m * lot["sign"]
             chg = (lot["unit_chg"] + unit_chg) * m
             out.append({
-                "symbol": t.get("tradingSymbol") or t.get("customSymbol"), "securityId": sid,
+                "symbol": t["symbol"], "securityId": sid,
                 "direction": "LONG" if lot["sign"] == 1 else "SHORT",
                 "option": t.get("drvOptionType"), "strike": t.get("drvStrikePrice"),
                 "qty": m, "entry_time": lot["time"], "exit_time": t["time"],
@@ -83,7 +92,7 @@ def round_trips(df: pd.DataFrame):
                 book.popleft()
         if q > 0:
             book.append({"sign": sign, "qty": q, "price": t["tradedPrice"], "unit_chg": unit_chg,
-                         "time": t["time"], "symbol": t.get("tradingSymbol") or t.get("customSymbol"),
+                         "time": t["time"], "symbol": t["symbol"],
                          "option": t.get("drvOptionType"), "strike": t.get("drvStrikePrice")})
     open_lots = [dict(securityId=k, **l) for k, b in lots.items() for l in b]
     return pd.DataFrame(out), pd.DataFrame(open_lots)

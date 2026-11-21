@@ -78,14 +78,16 @@ def main():
         raise SystemExit("No trades returned for that period.")
     raw.to_csv(os.path.join(a.out_dir, "raw_trades.csv"), index=False)
     df = clean(raw)
-    if a.only_derivatives and "instrument" in df:
-        df = df[df["instrument"].astype(str).str.upper() == "DERIVATIVES"]
+    print("Columns from Dhan:", ", ".join(raw.columns))
+    if a.only_derivatives:
+        is_opt = df["drvOptionType"].astype(str).str.upper().isin(["CALL", "PUT"]) if "drvOptionType" in df else False
+        is_der = df["instrument"].astype(str).str.upper().str.contains("DERIV|OPT|FUT") if "instrument" in df else False
+        df = df[is_opt | is_der]
     if a.filter:
-        sym = df["tradingSymbol"].fillna("") + " " + df.get("customSymbol", pd.Series("", index=df.index)).fillna("")
-        df = df[sym.str.upper().str.contains(a.filter.upper(), regex=False)]
+        df = df[df["symbol"].str.upper().str.contains(a.filter.upper(), regex=False)]
     if df.empty:
-        raise SystemExit("No matching derivatives trades. Try without --filter.")
-    print("Contracts found:", ", ".join(sorted(set(df["tradingSymbol"].astype(str))))[:300])
+        raise SystemExit("No matching option trades. Try without --filter, and send me the 'Columns from Dhan' line.")
+    print("Contracts found:", ", ".join(sorted(set(df["symbol"])))[:300])
     rt, open_lots = round_trips(df)
     if rt.empty:
         raise SystemExit("No closed round trips found.")
