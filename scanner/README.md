@@ -21,3 +21,8 @@ Offline mode: `python dhan_scanner.py --csv-dir ./candles` with `<symbol>.csv` f
 
 ## Tests
 `python -m pytest -q` (runs on synthetic data). The live Dhan call has not been tested against a real account.
+
+## Backtest
+`python backtest.py` (or `--csv-dir ./candles`; needs a `NIFTY 50` series as benchmark). It steps through history, computes each label using only past data (a test checks there is no lookahead), then compares the next 66 trading days' return with NIFTY's over the same dates, grouped by label.
+
+Caveats: overlapping windows make samples correlated; a handful of large stocks is a tiny sample; no costs, slippage or survivorship adjustment; indicators are simplified. Treat results as a rough sanity check, not proof. Output on synthetic data is meaningless by construction.

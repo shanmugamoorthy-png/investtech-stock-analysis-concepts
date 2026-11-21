@@ -37,3 +37,15 @@ def test_range_break_up_with_volume():
 def test_read_order_trend_first():
     t = {"direction": "rising"}
     assert "NOT confirming" in read(t, -5)
+
+
+def test_backtest_has_no_lookahead():
+    from backtest import signals
+    df = make(0.0008, n=700, seed=11)
+    base = signals(df, 20, 66)
+    # Corrupt all data after the first signal's horizon end; its label must not change.
+    df2 = df.copy()
+    cut = 375 + 66
+    df2.loc[df2.index[cut:], ["close", "high", "low"]] *= 5
+    changed = signals(df2, 20, 66)
+    assert base.loc[0, "label"] == changed.loc[0, "label"]
