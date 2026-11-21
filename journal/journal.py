@@ -11,7 +11,7 @@ import os
 import pandas as pd
 
 from metrics import breakdown, revenge_check, summary
-from trades import clean, fetch_trades, round_trips
+from trades import clean, fetch_trades, load_zerodha, round_trips
 
 
 def equity_svg(rt: pd.DataFrame, w=760, h=220) -> str:
@@ -69,11 +69,12 @@ def main():
     ap.add_argument("--filter", default="", help="keep trades whose symbol contains this text (e.g. NIFTY)")
     ap.add_argument("--only-derivatives", action="store_true", default=True)
     ap.add_argument("--raw", help="JSON file of trade objects instead of calling Dhan")
+    ap.add_argument("--zerodha", help="Zerodha Console tradebook file (.csv or .xlsx)")
     ap.add_argument("--out-dir", default="out")
     a = ap.parse_args()
     os.makedirs(a.out_dir, exist_ok=True)
 
-    raw = pd.DataFrame(json.load(open(a.raw))) if a.raw else fetch_trades(a.days)
+    raw = load_zerodha(a.zerodha) if a.zerodha else (pd.DataFrame(json.load(open(a.raw))) if a.raw else fetch_trades(a.days))
     if raw.empty:
         raise SystemExit("No trades returned for that period.")
     raw.to_csv(os.path.join(a.out_dir, "raw_trades.csv"), index=False)

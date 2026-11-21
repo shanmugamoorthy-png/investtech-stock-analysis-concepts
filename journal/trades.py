@@ -96,3 +96,46 @@ def round_trips(df: pd.DataFrame):
                          "option": t.get("drvOptionType"), "strike": t.get("drvStrikePrice")})
     open_lots = [dict(securityId=k, **l) for k, b in lots.items() for l in b]
     return pd.DataFrame(out), pd.DataFrame(open_lots)
+
+
+def load_zerodha(path: str) -> pd.DataFrame:
+    """Read a Zerodha Console tradebook (.csv or .xlsx) and shape it like the Dhan data. Charges are not in this file, so they are 0."""
+    if str(path).lower().endswith((".xlsx", ".xls")):
+        raw = pd.read_excel(path, header=None, dtype=str)
+    else:
+        import csv
+        with open(path, newline="", encoding="utf-8-sig") as f:
+            rows = list(csv.reader(f))
+        width = max((len(r) for r in rows), default=0)
+        raw = pd.DataFrame([r + [None] * (width - len(r)) for r in rows], dtype=object)
+    hdr = None
+    for i in range(min(len(raw), 60)):
+        vals = [str(v).strip().lower() for v in raw.iloc[i].tolist()]
+        if "symbol" in vals and "trade_type" in vals:
+            hdr = i
+            break
+    if hdr is None:
+        sys.exit("This does not look like a Zerodha tradebook (no 'symbol' and 'trade_type' columns).")
+    df = raw.iloc[hdr + 1:].copy()
+    df.columns = [str(v).strip().lower() for v in raw.iloc[hdr].tolist()]
+    df = df.dropna(subset=["symbol"])
+    df = df[df["trade_type"].astype(str).str.lower().isin(["buy", "sell"])]
+    sym = df["symbol"].astype(str).str.strip()
+    opt = sym.str.extract(r"(CE|PE)$")[0].map({"CE": "CALL", "PE": "PUT"})
+    seg = df["segment"].astype(str).str.upper() if "segment" in df else pd.Series("", index=df.index)
+    when = df["order_execution_time"] if "order_execution_time" in df else df["trade_date"]
+    out = pd.DataFrame({
+        "orderId": df["order_id"].astype(str) if "order_id" in df else "",
+        "exchangeTradeId": df["trade_id"].astype(str) if "trade_id" in df else range(len(df)),
+        "transactionType": df["trade_type"].astype(str).str.upper(),
+        "exchangeSegment": seg,
+        "customSymbol": sym,
+        "securityId": sym,
+        "tradedQuantity": df["quantity"],
+        "tradedPrice": df["price"],
+        "instrument": seg.where(~seg.isin(["FO", "NFO"]), "OPTSTK"),
+        "drvOptionType": opt,
+        "drvStrikePrice": "",
+        "exchangeTime": pd.to_datetime(when, errors="coerce").dt.strftime("%Y-%m-%d %H:%M:%S"),
+    }, index=df.index).reset_index(drop=True)
+    return out

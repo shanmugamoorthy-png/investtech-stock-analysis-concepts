@@ -18,3 +18,11 @@ Mount Google Drive first (`from google.colab import drive; drive.mount("/content
 - Charges are the sum of the fields Dhan reports (brokerage, STT, exchange charges, SEBI, stamp duty, service tax). Check them against your contract notes.
 - FIFO matching per contract; partial exits are split. Tests are in `test_journal.py` (`python -m pytest -q`).
 - Not yet run against a real Dhan account.
+
+## Zerodha users
+
+Download your tradebook from Zerodha Console (Reports > Tradebook, segment F&O, pick the date range), upload the file to Colab and run:
+
+    python journal.py --zerodha /content/tradebook.csv --filter NIFTY --out-dir /content/drive/MyDrive/journal
+
+The tradebook has no charges, so the journal shows gross P&L (brokerage, STT and taxes are not deducted).
