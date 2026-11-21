@@ -25,4 +25,4 @@ Download your tradebook from Zerodha Console (Reports > Tradebook, segment F&O, 
 
     python journal.py --zerodha /content/tradebook.csv --filter NIFTY --out-dir /content/drive/MyDrive/journal
 
-The tradebook has no charges, so the journal shows gross P&L (brokerage, STT and taxes are not deducted).
+The tradebook has no charges, so the journal estimates them from Zerodha's published rates (Rs 20 per order, STT, exchange fees, GST, stamp duty). Treat that as an estimate and check against your contract notes. Futures are left out unless you add --include-futures. Options that expired with no closing trade are listed separately with a "if worthless" figure.

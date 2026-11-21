@@ -34,7 +34,7 @@ def summary(rt: pd.DataFrame) -> dict:
 
 
 def breakdown(rt: pd.DataFrame, key: pd.Series, name: str) -> pd.DataFrame:
-    g = rt.groupby(key)["net"].agg(trades="size", net_pnl="sum", avg_pnl="mean",
+    g = rt.groupby(key, observed=False)["net"].agg(trades="size", net_pnl="sum", avg_pnl="mean",
                                   win_rate_pct=lambda x: (x > 0).mean() * 100)
     g.index.name = name
     return g.round(1)

@@ -5,6 +5,7 @@ import time
 from collections import deque
 from datetime import date, timedelta
 
+import re
 import warnings
 
 import pandas as pd
@@ -133,9 +134,73 @@ def load_zerodha(path: str) -> pd.DataFrame:
         "securityId": sym,
         "tradedQuantity": df["quantity"],
         "tradedPrice": df["price"],
-        "instrument": seg.where(~seg.isin(["FO", "NFO"]), "OPTSTK"),
+        "instrument": opt.notna().map({True: "OPTION", False: "FUTURE"}),
         "drvOptionType": opt,
         "drvStrikePrice": "",
         "exchangeTime": pd.to_datetime(when, errors="coerce").dt.strftime("%Y-%m-%d %H:%M:%S"),
     }, index=df.index).reset_index(drop=True)
-    return out
+    return add_zerodha_charges(out)
+
+
+# Zerodha rates (zerodha.com/charges, checked Nov 2026). These are ESTIMATES; your contract note is the truth.
+NSE_OPT_TXN, BSE_OPT_TXN = 0.000311, 0.000325
+STT_OPT_SELL, STT_FUT_SELL = 0.0015, 0.0005
+SEBI, STAMP_OPT, STAMP_FUT, GST = 1e-6, 0.00003, 0.00002, 0.18
+
+
+def add_zerodha_charges(d: pd.DataFrame) -> pd.DataFrame:
+    """Estimate charges per fill. Options: Rs 20 per executed order; futures: lower of Rs 20 or 0.03%."""
+    d = d.copy()
+    q = pd.to_numeric(d["tradedQuantity"], errors="coerce")
+    p = pd.to_numeric(d["tradedPrice"], errors="coerce")
+    turn = (q * p).fillna(0.0)
+    is_opt = d["drvOptionType"].notna()
+    sell = d["transactionType"] == "SELL"
+    order_turn = turn.groupby(d["orderId"]).transform("sum")
+    cap = pd.Series(20.0, index=d.index).where(is_opt, (order_turn * 0.0003).clip(upper=20.0))
+    share = (turn / order_turn.where(order_turn > 0, 1.0))
+    brokerage = cap * share
+    bse = d["customSymbol"].astype(str).str.upper().str.startswith(("SENSEX", "BANKEX"))
+    txn = turn * pd.Series(NSE_OPT_TXN, index=d.index).where(~bse, BSE_OPT_TXN).where(is_opt, 0.0000183)
+    sebi = turn * SEBI
+    d["brokerageCharges"] = brokerage
+    d["exchangeTransactionCharges"] = txn
+    d["sebiTax"] = sebi
+    d["serviceTax"] = GST * (brokerage + txn + sebi)
+    d["stt"] = turn.where(sell, 0.0) * pd.Series(STT_OPT_SELL, index=d.index).where(is_opt, STT_FUT_SELL)
+    d["stampDuty"] = turn.where(~sell, 0.0) * pd.Series(STAMP_OPT, index=d.index).where(is_opt, STAMP_FUT)
+    return d
+
+
+_MONTH = {**{str(i): i for i in range(1, 10)}, "O": 10, "N": 11, "D": 12}
+_MON3 = {m: i + 1 for i, m in enumerate(["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"])}
+
+
+def parse_expiry(symbol: str):
+    """Expiry date from a Zerodha option symbol, or None. Monthly symbols use the month end (approximate)."""
+    s = str(symbol).upper()
+    m = re.match(r"^[A-Z]+?(\d{2})([1-9OND])(\d{2})\d+(CE|PE)$", s)
+    if m:
+        try:
+            return date(2000 + int(m.group(1)), _MONTH[m.group(2)], int(m.group(3)))
+        except ValueError:
+            return None
+    m = re.match(r"^[A-Z]+?(\d{2})([A-Z]{3})\d+(CE|PE)$", s)
+    if m and m.group(2) in _MON3:
+        y, mo = 2000 + int(m.group(1)), _MON3[m.group(2)]
+        nxt = date(y + (mo == 12), mo % 12 + 1, 1)
+        return nxt - timedelta(days=1)
+    return None
+
+
+def classify_open(open_lots: pd.DataFrame, today: date = None) -> pd.DataFrame:
+    """Add expiry, expired flag, and the P&L if the option expired worth zero (an assumption, see report)."""
+    if open_lots.empty:
+        return open_lots
+    today = today or date.today()
+    o = open_lots.copy()
+    o["expiry"] = o["symbol"].map(parse_expiry)
+    o["expired"] = o["expiry"].map(lambda e: e is not None and e < today)
+    o["side"] = o["sign"].map({1: "BOUGHT", -1: "SOLD"})
+    o["pnl_if_zero"] = -o["sign"] * o["price"] * o["qty"]
+    return o

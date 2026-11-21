@@ -56,3 +56,25 @@ def test_symbol_falls_back_to_security_id():
         r.pop("customSymbol")
     rt, _ = rts(rows)
     assert rt.loc[0, "symbol"] == "1"
+
+
+def test_parse_expiry_and_expired_scenario():
+    from datetime import date
+    from trades import classify_open, parse_expiry
+    assert parse_expiry("NIFTY26N0323000CE") == date(2026, 11, 3)
+    assert parse_expiry("NIFTY26NOV23000CE") == date(2026, 11, 30)
+    assert parse_expiry("NIFTY26NOVFUT") is None
+    rt, op = rts([T(1, "BUY", 75, 50, "2026-11-02 09:30:00")])
+    op["symbol"] = "NIFTY26N0323000CE"
+    o = classify_open(op, today=date(2026, 11, 22))
+    assert bool(o.loc[0, "expired"]) and o.loc[0, "pnl_if_zero"] == -3750
+
+
+def test_zerodha_charges_flat_brokerage_per_order():
+    from trades import add_zerodha_charges
+    d = pd.DataFrame({"orderId": ["1", "1", "2"], "transactionType": ["BUY", "BUY", "SELL"],
+                      "tradedQuantity": [50, 25, 75], "tradedPrice": [100, 100, 110],
+                      "drvOptionType": ["CALL"] * 3, "customSymbol": ["NIFTY26N0323000CE"] * 3})
+    c = add_zerodha_charges(d)
+    assert abs(c["brokerageCharges"].sum() - 40) < 1e-9          # Rs 20 per order, split across fills
+    assert abs(c.loc[2, "stt"] - 75 * 110 * 0.0015) < 1e-9 and c.loc[0, "stt"] == 0
