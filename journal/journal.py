@@ -79,6 +79,13 @@ def main():
     raw.to_csv(os.path.join(a.out_dir, "raw_trades.csv"), index=False)
     df = clean(raw)
     print("Columns from Dhan:", ", ".join(raw.columns))
+    print(f"\nDhan returned {len(raw)} fills ({len(df)} after cleaning).")
+    for c in ("instrument", "exchangeSegment", "productType", "drvOptionType"):
+        if c in df:
+            print(f"  {c}: {dict(df[c].astype(str).value_counts())}")
+    if "time" in df and df["time"].notna().any():
+        print(f"  dates: {df['time'].min().date()} to {df['time'].max().date()}")
+    print("  sample symbols:", ", ".join(df["symbol"].astype(str).drop_duplicates().head(6)))
     if a.only_derivatives:
         is_opt = df["drvOptionType"].astype(str).str.upper().isin(["CALL", "PUT"]) if "drvOptionType" in df else False
         is_der = df["instrument"].astype(str).str.upper().str.contains("DERIV|OPT|FUT") if "instrument" in df else False
@@ -86,7 +93,7 @@ def main():
     if a.filter:
         df = df[df["symbol"].str.upper().str.contains(a.filter.upper(), regex=False)]
     if df.empty:
-        raise SystemExit("No matching option trades. Try without --filter, and send me the 'Columns from Dhan' line.")
+        raise SystemExit("\nNo matching option trades. Send me the lines printed above (counts and sample symbols; no prices).")
     print("Contracts found:", ", ".join(sorted(set(df["symbol"])))[:300])
     rt, open_lots = round_trips(df)
     if rt.empty:
