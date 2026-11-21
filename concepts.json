@@ -1,0 +1,278 @@
+[
+ {
+  "category": "Analysis timeframes",
+  "name": "Medium and long term analyses",
+  "summary": "Chart analyses covering roughly 1-6 months and 1-6 quarters.",
+  "url": "https://www.investtech.com/main/market.php?CountryID=100&p=staticPage&fn=helpItem&tbReport=h_QuickStartAboutAnalyses&lang=000",
+  "details": [
+   "Computer-generated chart analyses. Medium term uses an 18-month chart for a 1-6 month horizon; long term uses a 6-year chart for a 1-6 quarter horizon.",
+   "Built with pattern recognition, statistics and maths, applying traditional technical analysis with no human judgment.",
+   "Each analysis gets one of five ratings: Positive Candidate, Weak Positive, Wait/Watch, Weak Negative, Negative Candidate.",
+   "Published after the exchange closes and before the next open."
+  ],
+  "fullRead": true
+ },
+ {
+  "category": "Analysis timeframes",
+  "name": "Short term analyses",
+  "summary": "Chart analyses covering roughly 1-6 weeks.",
+  "url": "https://www.investtech.com/main/market.php?CountryID=100&p=staticPage&fn=helpItem&tbReport=h_QuickStartAboutAnalyses&lang=000",
+  "details": [
+   "Uses a 5-month chart for a 1-6 week horizon.",
+   "A separate 21-day candlestick chart, combined with the short and medium charts, suits a 0-10 day horizon."
+  ],
+  "fullRead": true
+ },
+ {
+  "category": "Analysis timeframes",
+  "name": "Overall analysis",
+  "summary": "Combines the long, medium and short term views into one assessment.",
+  "url": "https://www.investtech.com/main/market.php?CountryID=100&p=staticPage&fn=helpItem&tbReport=h_QuickStartAboutAnalyses&lang=000",
+  "details": [
+   "Combines short, medium and long term views.",
+   "Some places show a Technical score (-100 to +100) instead of, or next to, the five-step rating."
+  ],
+  "fullRead": true
+ },
+ {
+  "category": "Signals and indicators",
+  "name": "Buy and sell signals",
+  "summary": "Concrete buy/sell signals generated for individual stocks.",
+  "url": "https://www.investtech.com/main/market.php?CountryID=100&p=staticPage&fn=helpItem&tbReport=h_QuickStartAboutAnalyses&lang=000",
+  "details": [
+   "Signals from price formations are assumed to show which way most investors are moving.",
+   "Each signal has a quality score (0-100) and an objective (target price); see Ranking by signals."
+  ],
+  "fullRead": false
+ },
+ {
+  "category": "Signals and indicators",
+  "name": "Trend signals",
+  "summary": "Stocks that have recently entered a rising or falling trend.",
+  "url": "https://www.investtech.com/main/market.php?CountryID=100&p=staticPage&fn=helpItem&tbReport=h_TrendSignals",
+  "details": [
+   "Lists stocks that recently entered a rising or falling trend, either because the drawn trend changed or because price moved into the channel from outside.",
+   "Fields: days in trend, rising rate in degrees (0 flat to 90 vertical) and rising rate in percent (gain if the stock keeps following the channel for a year).",
+   "Simple use: buy a stock after a fresh rising-trend signal and hold until it leaves the trend.",
+   "Investtech's study (1996-2015, mainly Norway/Sweden): stocks entering rising trends averaged about 5.5% over the following months, falling-trend entries about 0.9%, versus about 3.6% for the indices. These are averages; single stocks vary."
+  ],
+  "fullRead": true
+ },
+ {
+  "category": "Signals and indicators",
+  "name": "Ranking by signals",
+  "summary": "Overview of the latest buy and sell signals.",
+  "url": "https://www.investtech.com/main/market.php?CountryID=100&p=staticPage&fn=helpItem&tbReport=h_Signals",
+  "details": [
+   "Screening list of recent positive, negative or neutral signals, filterable by indicator and by short, medium or long horizon.",
+   "Columns: date, indicator, quality (0-100 fit to an ideal pattern; below 40 is not drawn on charts) and objective (target price roughly reachable over a period as long as the pattern).",
+   "Can be used to find triggered setups or to scan for new candidates."
+  ],
+  "fullRead": true
+ },
+ {
+  "category": "Signals and indicators",
+  "name": "Hausse indices",
+  "summary": "Indicators of how optimistic the market is.",
+  "url": "https://www.investtech.com/main/market.php?CountryID=100&p=staticPage&fn=helpItem&tbReport=h_Hausse",
+  "details": [
+   "A sentiment gauge from 0 to 100: the share of companies whose latest Trading Range signal is a buy (price broke above a prior top) rather than a sell (broke below a prior bottom).",
+   "Two versions: short term (hausse1, holders of 1-6 weeks) and long term (hausse2, holders of months to years).",
+   "Above 50 means most investors are positive; below 50 means optimism is low. Rising after a bottom means growing optimism.",
+   "90 or more is 'elation' (good news priced in, possible overheating; consider selling when it drops back under 90). 10 or less is 'dejection' (selling may be nearly exhausted; consider buying when it rises back over 10).",
+   "Short-term investors often react first, so the short-term index can hint at long-term turns early."
+  ],
+  "fullRead": true
+ },
+ {
+  "category": "Signals and indicators",
+  "name": "Candlesticks",
+  "summary": "Candlestick analysis used for short-term price and volume reading.",
+  "url": "https://www.investtech.com/main/market.php?CountryID=100&p=staticPage&fn=helpItem&tbReport=h_Candlestick",
+  "details": [
+   "Short-term price and volume tool. Each candle is one session: the body spans open to close (white if close above open, black if below) and the wicks mark the high and low.",
+   "Volume columns are green (close rose), red (close fell) or blue (unchanged).",
+   "Volume should confirm price: tall green on up days with short red on down days is positive; the reverse is negative.",
+   "Mostly white candles suggest buying in the morning and selling in the evening; mostly black candles suggest the opposite.",
+   "Formations such as the hammer give short-term buy or sell signals."
+  ],
+  "fullRead": true
+ },
+ {
+  "category": "Price structure",
+  "name": "Pivot points",
+  "summary": "Tops and bottoms in the price chart.",
+  "url": "https://www.investtech.com/main/market.php?CountryID=100&p=staticPage&fn=helpItem&tbReport=h_PivotPoints",
+  "details": [
+   "Turning points (tops and bottoms) detected by computer. A bottom is confirmed only after price moves away from it by enough: a big percentage move needs few days, a small one must hold for more days.",
+   "Used as a stock-picking list of new bottoms within your time frame, then checked with normal chart analysis.",
+   "More reliable when the move comes on rising volume and goes with the prevailing trend.",
+   "A candidate for further analysis, not a standalone buy signal."
+  ],
+  "fullRead": true
+ },
+ {
+  "category": "Price structure",
+  "name": "Trend and trend channels",
+  "summary": "Direction of price movement, e.g. a rising trend channel.",
+  "url": "https://www.investtech.com",
+  "details": [
+   "Trend is the prevailing price direction and, per Investtech, the most important input to the technical score.",
+   "Shown as a channel with a floor and ceiling; entering or leaving it generates trend signals."
+  ],
+  "fullRead": true
+ },
+ {
+  "category": "Price structure",
+  "name": "Support and resistance",
+  "summary": "Price levels where a stock may stall, reverse or break through.",
+  "url": "https://www.investtech.com",
+  "details": [
+   "Price levels where buying or selling pressure tends to halt a move; a break of such a level can start a new move.",
+   "One of the inputs to the technical score."
+  ],
+  "fullRead": true
+ },
+ {
+  "category": "Price structure",
+  "name": "Price patterns",
+  "summary": "Chart formations used to read investor direction.",
+  "url": "https://www.investtech.com",
+  "details": [
+   "Chart formations (for example rectangles) read as signs of which way most investors are moving.",
+   "Each carries a quality score (0-100), and the objective gives a reference target."
+  ],
+  "fullRead": true
+ },
+ {
+  "category": "Price structure",
+  "name": "Volume",
+  "summary": "Trading volume as confirmation of price moves.",
+  "url": "https://www.investtech.com",
+  "details": [
+   "Shares traded, used to judge how strong a price move is. Part of the technical score and used in candlestick and pivot-point confirmation.",
+   "The Volume Balance (VolBal, 22-day) compares volume with price movement."
+  ],
+  "fullRead": true
+ },
+ {
+  "category": "Stock selection and screening",
+  "name": "Stock selection",
+  "summary": "Stock-picking tool with filters such as liquidity and time perspective.",
+  "url": "https://www.investtech.com/main/market.php?CountryID=100&p=staticPage&fn=helpItem&tbReport=h_StockSelection",
+  "details": [
+   "Screener that ranks stocks across chosen markets and sectors with sliders in three groups: General (size, liquidity, volatility), Technical (trend, support/resistance, volume, pattern signals) and Financial (P/E, P/S, P/B, yield).",
+   "Technical score runs -100 to +100: below -50 negative candidate, -50 to -25 weak negative, -25 to 25 watch, 25 to 50 weak positive, above 50 positive candidate.",
+   "Other columns: market cap, liquidity (average daily turnover), volatility (average monthly high-low range), RSI21 and VolBal.",
+   "Use technical filters for timing and financial ones for valuation, compare to the Mean and Median rows, and check liquidity before acting."
+  ],
+  "fullRead": true
+ },
+ {
+  "category": "Stock selection and screening",
+  "name": "Trading opportunities",
+  "summary": "Stocks where several indicators combine to suggest a likely rise or fall.",
+  "url": "https://www.investtech.com/main/market.php?CountryID=100&p=staticPage&fn=helpItem&tbReport=h_TradOppList",
+  "details": [
+   "Rare setups where several indicators line up to suggest a large move with high upside and relatively low downside. Ten types, each viewable short, medium or long term.",
+   "Score 0-100 measures fit to the setup type; only 70+ are listed by default. Risk is not part of the score.",
+   "Potential is the percent upside from buy price to target; risk/reward compares upside to the stop-loss distance (for example 20% up against 5% down is about 4:1).",
+   "The detail page gives buy price, target, stop loss, time horizon and factors that strengthen or weaken the case."
+  ],
+  "fullRead": true
+ },
+ {
+  "category": "Stock selection and screening",
+  "name": "Seasonal variations",
+  "summary": "Statistical patterns in a stock's behavior across the year.",
+  "url": "https://www.investtech.com/main/market.php?CountryID=100&p=staticPage&fn=helpItem&tbReport=h_SeasonalCompany&PrevCompanyID=100702&PrevProduct=221",
+  "details": [
+   "Shows how a stock has statistically moved across the calendar year, with a six-month projection of the average path and one and two standard-deviation bands.",
+   "Averages use a geometric mean; a monthly view shows the average change per month, and five past years show how much results vary.",
+   "A description of past patterns, not a forecast; a few extreme years can distort the average."
+  ],
+  "fullRead": true
+ },
+ {
+  "category": "Stock selection and screening",
+  "name": "Compare stocks",
+  "summary": "Compare a stock's price development with other securities.",
+  "url": "https://www.investtech.com/main/market.php?CountryID=100&product=44&fn=/uk/comparehelp_000.phtm",
+  "details": [
+   "Compares a stock's price development with other securities. The help page for this one was not read."
+  ],
+  "fullRead": false
+ },
+ {
+  "category": "Portfolio and monitoring",
+  "name": "Health Check",
+  "summary": "Detailed check of a portfolio's technical condition.",
+  "url": "https://www.investtech.com/main/market.php?CountryID=100&p=staticPage&fn=helpItem&tbReport=h_Top50",
+  "details": [
+   "Portfolio health check. The linked page actually describes Top 50, so this tool's own help was not read."
+  ],
+  "fullRead": false
+ },
+ {
+  "category": "Portfolio and monitoring",
+  "name": "Top 50",
+  "summary": "Ranking of the 50 most positive and most negative stocks.",
+  "url": "https://www.investtech.com",
+  "details": [
+   "The 50 stocks with the highest technical scores, with switchable Buy and Sell candidate lists and short, medium, long or overall horizons (some need higher subscriptions).",
+   "Score inputs: trend (most important), support and resistance, price formations and volume; the weighting is not published.",
+   "Scores close together mean little; an 80 is not clearly better than a 70."
+  ],
+  "fullRead": true
+ },
+ {
+  "category": "Portfolio and monitoring",
+  "name": "Today's Case",
+  "summary": "A selected technically positive stock.",
+  "url": "https://www.investtech.com",
+  "details": [
+   "A selected technically positive stock. No help page was found."
+  ],
+  "fullRead": false
+ },
+ {
+  "category": "Portfolio and monitoring",
+  "name": "Morning reports",
+  "summary": "Daily automated evaluations.",
+  "url": "https://www.investtech.com",
+  "details": [
+   "Daily automated evaluations. No help page was found."
+  ],
+  "fullRead": false
+ },
+ {
+  "category": "Portfolio and monitoring",
+  "name": "Price alerts",
+  "summary": "Notifications when a stock reaches a set price.",
+  "url": "https://www.investtech.com",
+  "details": [
+   "Notifications when a stock reaches a set price. No help page was found."
+  ],
+  "fullRead": false
+ },
+ {
+  "category": "Education",
+  "name": "Webinars",
+  "summary": "Topics include trend following and volume analysis.",
+  "url": "https://www.investtech.com",
+  "details": [
+   "Examples listed: trend following (May 2019) and volume (June 2019). Not read."
+  ],
+  "fullRead": false
+ },
+ {
+  "category": "Education",
+  "name": "Courses and seminars",
+  "summary": "Includes a Technical Analysis User Course.",
+  "url": "https://www.investtech.com",
+  "details": [
+   "Includes a Technical Analysis User Course (January 2025). Not read."
+  ],
+  "fullRead": false
+ }
+]
