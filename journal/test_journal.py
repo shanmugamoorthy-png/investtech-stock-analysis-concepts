@@ -102,3 +102,10 @@ def test_stt_rate_changes_with_date():
     assert abs(stt("2024-05-10") - 10000 * 0.000625) < 1e-9
     assert abs(stt("2025-05-10") - 10000 * 0.001) < 1e-9
     assert abs(stt("2026-11-10") - 10000 * 0.0015) < 1e-9
+
+
+def test_filter_pattern_excludes_banknifty():
+    import re
+    pat = "^" + re.escape("NIFTY") + "(?![A-Z])"
+    s = pd.Series(["NIFTY26N0323000CE", "BANKNIFTY26MAR52000PE", "FINNIFTY26N0323000CE", "NIFTY26NOV23000CE"])
+    assert list(s.str.contains(pat, regex=True)) == [True, False, False, True]

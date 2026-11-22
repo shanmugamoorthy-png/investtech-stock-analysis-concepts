@@ -7,6 +7,7 @@ import argparse
 import html
 import json
 import os
+import re
 
 import pandas as pd
 
@@ -58,19 +59,24 @@ def build_report(rt: pd.DataFrame, open_lots: pd.DataFrame, raw_n: int) -> str:
         table(rt.nsmallest(5, "net")[["symbol", "direction", "qty", "entry_time", "exit_time", "net"]], index=False),
     ]
     if len(open_lots):
-        exp, still = open_lots[open_lots["expired"]], open_lots[~open_lots["expired"]]
-        if len(exp):
-            lost = -exp.loc[exp["sign"] == 1, "pnl_if_zero"].sum() * -1
-            kept = exp.loc[exp["sign"] == -1, "pnl_if_zero"].sum()
-            parts += ["<h2>Expired with no closing trade</h2>",
-                      "<p>These options expired and have no sell/buy trade. <b>They are not in the P&amp;L above.</b> "
-                      "If they expired worthless, bought ones lose the full premium and sold ones keep it. "
-                      "Options that expired in the money were settled at their value instead, so check your contract note.</p>",
-                      f"<p>If worthless: bought options {lost:,.0f}, sold options +{kept:,.0f}, "
-                      f"total {lost + kept:,.0f} (before charges).</p>",
-                      table(exp[["symbol", "side", "qty", "price", "expiry", "pnl_if_zero"]], index=False)]
+        bought_exp = open_lots[open_lots["expired"] & (open_lots["sign"] == 1)]
+        orphan = open_lots[open_lots["sign"] == -1]
+        still = open_lots[~open_lots["expired"] & (open_lots["sign"] == 1)]
+        if len(bought_exp):
+            parts += ["<h2>Bought, expired, no sell trade</h2>",
+                      "<p>These were bought and never sold before expiry, so they are <b>not in the P&amp;L above</b>. "
+                      "If they expired worthless the whole premium is lost; if they expired in the money they were settled at "
+                      "their value, so check your contract notes.</p>",
+                      f"<p>If all worthless: {bought_exp['pnl_if_zero'].sum():,.0f} (before charges). "
+                      f"Count: {len(bought_exp)}.</p>",
+                      table(bought_exp[["symbol", "qty", "price", "expiry", "pnl_if_zero"]], index=False)]
+        if len(orphan):
+            parts += ["<h2>Sells with no matching buy in your files</h2>",
+                      "<p>Most likely the buy was before your first file starts, so add an older tradebook. "
+                      "Not counted in any figure above or below.</p>",
+                      table(orphan[["symbol", "qty", "price", "time"]], index=False)]
         if len(still):
-            parts += ["<h2>Positions still open</h2>", table(still[["symbol", "side", "qty", "price", "time"]], index=False)]
+            parts += ["<h2>Positions still open</h2>", table(still[["symbol", "qty", "price", "time"]], index=False)]
     css = ("body{font-family:system-ui;max-width:860px;margin:auto;padding:12px}table.t{border-collapse:collapse}"
            "table.t td,table.t th{padding:4px 10px;border-bottom:1px solid #ddd;text-align:right}h2{margin-top:28px}")
     return f"<!DOCTYPE html><html><head><meta charset='utf-8'><title>Trade journal</title><style>{css}</style></head><body>{''.join(parts)}</body></html>"
@@ -112,7 +118,8 @@ def main():
             print(f"Left out {int((~ok).sum())} futures fills (use --include-futures to keep them).")
         df = df[ok]
     if a.filter:
-        df = df[df["symbol"].str.upper().str.contains(a.filter.upper(), regex=False)]
+        pat = "^" + re.escape(a.filter.upper()) + "(?![A-Z])"   # NIFTY matches NIFTY26..., not BANKNIFTY or FINNIFTY
+        df = df[df["symbol"].str.upper().str.contains(pat, regex=True)]
     if df.empty:
         raise SystemExit("\nNo matching option trades. Send me the lines printed above (counts and sample symbols; no prices).")
     print("Contracts found:", ", ".join(sorted(set(df["symbol"])))[:300])
@@ -131,10 +138,14 @@ def main():
     for k, v in summary(rt).items():
         print(f"  {k}: {v}")
     if len(open_lots):
-        exp = open_lots[open_lots["expired"]]
-        print(f"\n{len(exp)} expired position(s) and {len(open_lots) - len(exp)} open position(s) have no closing trade and are NOT in the P&L.")
-        if len(exp):
-            print(f"  If the expired ones finished worthless: {exp['pnl_if_zero'].sum():,.0f} (bought lose premium, sold keep it), before charges.")
+        be = open_lots[open_lots["expired"] & (open_lots["sign"] == 1)]
+        orphan = open_lots[open_lots["sign"] == -1]
+        print(f"\nNot in the P&L: {len(be)} bought options that expired unsold, {len(orphan)} sells with no matching buy in the files, "
+              f"{len(open_lots) - len(be) - len(orphan)} still open.")
+        if len(be):
+            print(f"  If the expired bought ones finished worthless: {be['pnl_if_zero'].sum():,.0f} before charges (in-the-money ones were settled at value instead).")
+        if len(orphan):
+            print("  Sells with no matching buy usually mean the buy is in an older tradebook that is not uploaded yet.")
 
 
 if __name__ == "__main__":
