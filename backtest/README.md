@@ -16,11 +16,11 @@ Each is run two ways: entries any time from 9:30, or only from 10:00 (the 9 AM h
 Signal at bar close, entry at next bar open. Stop 1 ATR, target 1.5 ATR on the index, exit after 8 bars or 15:15. Max 2 trades a day, one at a time, no entries after 14:30. Stop wins if both are touched in one bar.
 
 ## Money
-Options mode prices the real weekly ATM contract from Dhan's expired-options data, with 0.5 point slippage each side and estimated Zerodha charges (Rs 20 per order, STT, exchange fee, GST, stamp duty), per lot of 65. Exit premium is the option's close at the exit bar. Index mode uses index points with a flat cost.
+Options mode prices the real weekly ATM contract from Dhan's expired-options data, with 0.5 point slippage each side and estimated Zerodha charges (Rs 20 per order, STT, exchange fee, GST, stamp duty), per lot of 65. Exit premium is the option's close at the exit bar. Index mode (the default) uses NIFTY index points with a flat cost of 4 points per trade (about 1.6 for charges and 2 for slippage on a 65-qty at-the-money option, with each index point worth about Rs 32 per lot). Option time decay is not included, so real option results would be lower.
 
 ## How a combination can pass
 Data is split 70% first, 30% last by date. Nothing is chosen using the last 30%. A combination passes only if it has at least 60 trades in each part, is profitable with profit factor of at least 1.15 in both, and the last part beats 95% of random entries (same exit rules, same time window). Because 12 combinations are tried, one or two passing by luck is expected, so a pass is a reason to look closer, not proof.
 
 ## Run
-    python run.py --mode options --days 730 --out-dir /content/drive/MyDrive/backtest
+    python run.py --mode index --days 730 --out-dir /content/drive/MyDrive/backtest
     python run.py --demo          # synthetic data, checks the plumbing

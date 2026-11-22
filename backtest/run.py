@@ -17,12 +17,12 @@ from engine import MIN_PF, MIN_TRADES, Market, evaluate
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--days", type=int, default=730)
-    ap.add_argument("--mode", choices=["index", "options"], default="options")
+    ap.add_argument("--mode", choices=["index", "options"], default="index")
     ap.add_argument("--interval", type=int, default=15, choices=[5, 15, 25, 60])
     ap.add_argument("--offsets", type=int, default=2, help="how many strikes either side of ATM to load for options")
     ap.add_argument("--expiry-flag", default="WEEK")
     ap.add_argument("--expiry-code", type=int, default=1)
-    ap.add_argument("--cost-points", type=float, default=2.0, help="index mode: cost per trade in index points")
+    ap.add_argument("--cost-points", type=float, default=4.0, help="index mode: cost per trade in index points")
     ap.add_argument("--slip", type=float, default=0.5, help="options mode: slippage in premium points per side")
     ap.add_argument("--refresh", action="store_true")
     ap.add_argument("--demo", action="store_true")
@@ -45,6 +45,9 @@ def main():
     unit = "Rs per lot of 65" if a.mode == "options" else "index points"
     res.to_csv(os.path.join(a.out_dir, "backtest_results.csv"), index=False)
     trades.to_csv(os.path.join(a.out_dir, "backtest_trades.csv"), index=False)
+    if a.mode == "index":
+        print(f"\nCost per trade is {a.cost_points} index points: about 1.6 for charges and 2 for slippage on a 65-qty at-the-money option "
+              "(each index point is worth about Rs 32 per lot at delta 0.5). Option time decay is NOT included, so real option results would be lower.")
     print(f"\nFirst period: before {cut}. Last period: {cut} onward. Results are net of costs, in {unit}.\n")
     show = res.drop(columns=["verdict"]).copy()
     print(show.to_string(index=False))
