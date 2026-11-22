@@ -142,7 +142,8 @@ def load_zerodha(path: str) -> pd.DataFrame:
     return add_zerodha_charges(out)
 
 
-# Zerodha rates (zerodha.com/charges, checked Nov 2026). These are ESTIMATES; your contract note is the truth.
+# Zerodha rates (zerodha.com/charges, checked Nov 2026); STT and exchange fee are stepped by date for older trades.
+# These are ESTIMATES; your contract note is the truth.
 NSE_OPT_TXN, BSE_OPT_TXN = 0.000311, 0.000325
 STT_OPT_SELL, STT_FUT_SELL = 0.0015, 0.0005
 SEBI, STAMP_OPT, STAMP_FUT, GST = 1e-6, 0.00003, 0.00002, 0.18
@@ -161,13 +162,18 @@ def add_zerodha_charges(d: pd.DataFrame) -> pd.DataFrame:
     share = (turn / order_turn.where(order_turn > 0, 1.0))
     brokerage = cap * share
     bse = d["customSymbol"].astype(str).str.upper().str.startswith(("SENSEX", "BANKEX"))
-    txn = turn * pd.Series(NSE_OPT_TXN, index=d.index).where(~bse, BSE_OPT_TXN).where(is_opt, 0.0000183)
+    when = pd.to_datetime(d["exchangeTime"] if "exchangeTime" in d else pd.Series(pd.NaT, index=d.index), errors="coerce")
+    nse_rate = pd.Series(NSE_OPT_TXN, index=d.index)
+    nse_rate = nse_rate.mask(when < "2026-04-01", 0.00035).mask(when < "2024-10-01", 0.000495)
+    txn = turn * nse_rate.where(~bse, BSE_OPT_TXN).where(is_opt, 0.0000183)
     sebi = turn * SEBI
     d["brokerageCharges"] = brokerage
     d["exchangeTransactionCharges"] = txn
     d["sebiTax"] = sebi
     d["serviceTax"] = GST * (brokerage + txn + sebi)
-    d["stt"] = turn.where(sell, 0.0) * pd.Series(STT_OPT_SELL, index=d.index).where(is_opt, STT_FUT_SELL)
+    stt_opt = pd.Series(STT_OPT_SELL, index=d.index).mask(when < "2026-04-01", 0.001).mask(when < "2024-10-01", 0.000625)
+    stt_fut = pd.Series(STT_FUT_SELL, index=d.index).mask(when < "2026-04-01", 0.0002).mask(when < "2024-10-01", 0.000125)
+    d["stt"] = turn.where(sell, 0.0) * stt_opt.where(is_opt, stt_fut)
     d["stampDuty"] = turn.where(~sell, 0.0) * pd.Series(STAMP_OPT, index=d.index).where(is_opt, STAMP_FUT)
     return d
 
@@ -204,3 +210,23 @@ def classify_open(open_lots: pd.DataFrame, today: date = None) -> pd.DataFrame:
     o["side"] = o["sign"].map({1: "BOUGHT", -1: "SOLD"})
     o["pnl_if_zero"] = -o["sign"] * o["price"] * o["qty"]
     return o
+
+
+def load_zerodha_many(paths) -> pd.DataFrame:
+    """Read several tradebook files (or folders of them) and join them; repeated trades are dropped."""
+    import glob
+    files = []
+    for p in paths:
+        if os.path.isdir(p):
+            files += sorted(glob.glob(os.path.join(p, "*.csv")) + glob.glob(os.path.join(p, "*.xlsx")))
+        else:
+            files += sorted(glob.glob(p)) or [p]
+    if not files:
+        sys.exit("No tradebook files found.")
+    frames = []
+    for f in files:
+        d = load_zerodha(f)
+        print(f"  read {os.path.basename(f)}: {len(d)} fills")
+        frames.append(d)
+    out = pd.concat(frames, ignore_index=True)
+    return out.drop_duplicates(subset=["exchangeTradeId", "orderId", "exchangeTime"], keep="first").reset_index(drop=True)

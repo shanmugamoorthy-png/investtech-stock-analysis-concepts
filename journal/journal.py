@@ -11,7 +11,7 @@ import os
 import pandas as pd
 
 from metrics import breakdown, revenge_check, rule_check, summary
-from trades import classify_open, clean, fetch_trades, load_zerodha, round_trips
+from trades import classify_open, clean, fetch_trades, load_zerodha_many, round_trips
 
 
 def equity_svg(rt: pd.DataFrame, w=760, h=220) -> str:
@@ -84,12 +84,12 @@ def main():
     ap.add_argument("--raw", help="JSON file of trade objects instead of calling Dhan")
     ap.add_argument("--rules-from", help="only report trades entered on/after this date, e.g. 2026-11-23")
     ap.add_argument("--include-futures", action="store_true", help="also include futures (default: options only)")
-    ap.add_argument("--zerodha", help="Zerodha Console tradebook file (.csv or .xlsx)")
+    ap.add_argument("--zerodha", nargs="+", help="Zerodha tradebook file(s) or a folder of them (.csv or .xlsx)")
     ap.add_argument("--out-dir", default="out")
     a = ap.parse_args()
     os.makedirs(a.out_dir, exist_ok=True)
 
-    raw = load_zerodha(a.zerodha) if a.zerodha else (pd.DataFrame(json.load(open(a.raw))) if a.raw else fetch_trades(a.days))
+    raw = load_zerodha_many(a.zerodha) if a.zerodha else (pd.DataFrame(json.load(open(a.raw))) if a.raw else fetch_trades(a.days))
     if raw.empty:
         raise SystemExit("No trades returned for that period.")
     raw.to_csv(os.path.join(a.out_dir, "raw_trades.csv"), index=False)

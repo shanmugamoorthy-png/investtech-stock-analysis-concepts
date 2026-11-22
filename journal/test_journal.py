@@ -74,7 +74,8 @@ def test_zerodha_charges_flat_brokerage_per_order():
     from trades import add_zerodha_charges
     d = pd.DataFrame({"orderId": ["1", "1", "2"], "transactionType": ["BUY", "BUY", "SELL"],
                       "tradedQuantity": [50, 25, 75], "tradedPrice": [100, 100, 110],
-                      "drvOptionType": ["CALL"] * 3, "customSymbol": ["NIFTY26N0323000CE"] * 3})
+                      "drvOptionType": ["CALL"] * 3, "customSymbol": ["NIFTY26N0323000CE"] * 3,
+                      "exchangeTime": ["2026-11-20 10:00:00"] * 3})
     c = add_zerodha_charges(d)
     assert abs(c["brokerageCharges"].sum() - 40) < 1e-9          # Rs 20 per order, split across fills
     assert abs(c.loc[2, "stt"] - 75 * 110 * 0.0015) < 1e-9 and c.loc[0, "stt"] == 0
@@ -90,3 +91,14 @@ def test_rule_check_flags():
     assert c.loc["entered within 15 min of a loss", "trades"] == 1
     assert c.loc["entered after 2 losses that day", "trades"] == 1
     assert c.loc["followed all rules", "trades"] == 0 and c.loc["broke at least one rule", "trades"] == 3
+
+
+def test_stt_rate_changes_with_date():
+    from trades import add_zerodha_charges
+    def stt(day):
+        d = pd.DataFrame({"orderId": ["1"], "transactionType": ["SELL"], "tradedQuantity": [100], "tradedPrice": [100],
+                          "drvOptionType": ["CALL"], "customSymbol": ["NIFTY"], "exchangeTime": [day]})
+        return add_zerodha_charges(d).loc[0, "stt"]
+    assert abs(stt("2024-05-10") - 10000 * 0.000625) < 1e-9
+    assert abs(stt("2025-05-10") - 10000 * 0.001) < 1e-9
+    assert abs(stt("2026-11-10") - 10000 * 0.0015) < 1e-9

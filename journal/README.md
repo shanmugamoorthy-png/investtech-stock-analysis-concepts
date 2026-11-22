@@ -30,3 +30,5 @@ Download your tradebook from Zerodha Console (Reports > Tradebook, segment F&O, 
     python journal.py --zerodha /content/tradebook.csv --filter NIFTY --out-dir /content/drive/MyDrive/journal
 
 The tradebook has no charges, so the journal estimates them from Zerodha's published rates (Rs 20 per order, STT, exchange fees, GST, stamp duty). Treat that as an estimate and check against your contract notes. Futures are left out unless you add --include-futures. Options that expired with no closing trade are listed separately with a "if worthless" figure.
+
+For a long history, download the tradebook in pieces (for example one file per financial year), put all files in one folder, and pass the folder: `--zerodha /content/tradebooks`. Repeated trades across files are dropped. STT and exchange fees are stepped by date for older trades; still estimates.
