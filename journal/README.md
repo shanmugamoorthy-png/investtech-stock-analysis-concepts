@@ -19,6 +19,10 @@ Mount Google Drive first (`from google.colab import drive; drive.mount("/content
 - FIFO matching per contract; partial exits are split. Tests are in `test_journal.py` (`python -m pytest -q`).
 - Not yet run against a real Dhan account.
 
+## Rule check
+
+The report compares trades that broke three personal rules (no entry before 10:00, wait 15 min after a loss, stop after 2 losses a day) with trades that followed them. Add `--rules-from YYYY-MM-DD` to look only at trades since you started following them.
+
 ## Zerodha users
 
 Download your tradebook from Zerodha Console (Reports > Tradebook, segment F&O, pick the date range), upload the file to Colab and run:

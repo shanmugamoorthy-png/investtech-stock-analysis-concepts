@@ -10,7 +10,7 @@ import os
 
 import pandas as pd
 
-from metrics import breakdown, revenge_check, summary
+from metrics import breakdown, revenge_check, rule_check, summary
 from trades import classify_open, clean, fetch_trades, load_zerodha, round_trips
 
 
@@ -50,6 +50,10 @@ def build_report(rt: pd.DataFrame, open_lots: pd.DataFrame, raw_n: int) -> str:
         table(breakdown(rt, rt["option"].fillna("?").astype(str) + " " + rt["direction"], "type")),
         "<h2>Trades opened quickly after a loss (within 10 minutes)</h2>",
         table(pd.Series(revenge_check(rt), name="value").to_frame()),
+        "<h2>My three rules: trades that broke them vs followed them</h2>",
+        "<p>Rules: no entry before 10:00, wait 15 minutes after a loss, stop after 2 losses in a day. "
+        "Use --rules-from DATE to look only at trades since you started following them.</p>",
+        table(rule_check(rt)),
         "<h2>Five biggest losses</h2>",
         table(rt.nsmallest(5, "net")[["symbol", "direction", "qty", "entry_time", "exit_time", "net"]], index=False),
     ]
@@ -78,6 +82,7 @@ def main():
     ap.add_argument("--filter", default="", help="keep trades whose symbol contains this text (e.g. NIFTY)")
     ap.add_argument("--only-derivatives", action="store_true", default=True)
     ap.add_argument("--raw", help="JSON file of trade objects instead of calling Dhan")
+    ap.add_argument("--rules-from", help="only report trades entered on/after this date, e.g. 2026-11-23")
     ap.add_argument("--include-futures", action="store_true", help="also include futures (default: options only)")
     ap.add_argument("--zerodha", help="Zerodha Console tradebook file (.csv or .xlsx)")
     ap.add_argument("--out-dir", default="out")
@@ -115,6 +120,10 @@ def main():
     open_lots = classify_open(open_lots)
     if rt.empty:
         raise SystemExit("No closed round trips found.")
+    if a.rules_from:
+        rt = rt[rt["entry_time"] >= pd.Timestamp(a.rules_from)]
+        if rt.empty:
+            raise SystemExit(f"No trades on or after {a.rules_from} yet.")
     rt.to_csv(os.path.join(a.out_dir, "round_trips.csv"), index=False)
     path = os.path.join(a.out_dir, "journal_report.html")
     open(path, "w").write(build_report(rt, open_lots, len(df)))

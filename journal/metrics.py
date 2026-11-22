@@ -59,3 +59,32 @@ def revenge_check(rt: pd.DataFrame, minutes: int = 10) -> dict:
             "avg_net_other_trades": round(b["net"].mean(), 0) if len(b) else None,
             "win_rate_quick_%": round((a["net"] > 0).mean() * 100, 1) if len(a) else None,
             "win_rate_other_%": round((b["net"] > 0).mean() * 100, 1) if len(b) else None}
+
+
+def rule_check(rt: pd.DataFrame, start_hour: int = 10, wait_minutes: int = 15, max_losses: int = 2) -> pd.DataFrame:
+    """Compare trades that broke each personal rule with trades that did not. Describes the past; proves nothing."""
+    r = rt.sort_values("entry_time").reset_index(drop=True).copy()
+    exits = rt.sort_values("exit_time")[["exit_time", "net"]].reset_index(drop=True)
+    early, quick, over = [], [], []
+    for _, t in r.iterrows():
+        e = t["entry_time"]
+        early.append(e.hour < start_hour)
+        prev = exits[exits["exit_time"] <= e]
+        last = prev.iloc[-1] if len(prev) else None
+        quick.append(bool(last is not None and last["net"] < 0 and (e - last["exit_time"]) <= pd.Timedelta(minutes=wait_minutes)))
+        today = prev[prev["exit_time"].dt.date == e.date()]
+        over.append(int((today["net"] < 0).sum()) >= max_losses)
+    r["early"], r["quick"], r["over"] = early, quick, over
+    r["any"] = r["early"] | r["quick"] | r["over"]
+    rows = []
+    for label, col, inv in [(f"entered before {start_hour}:00", "early", False),
+                            (f"entered within {wait_minutes} min of a loss", "quick", False),
+                            (f"entered after {max_losses} losses that day", "over", False),
+                            ("broke at least one rule", "any", False),
+                            ("followed all rules", "any", True)]:
+        m = ~r[col] if inv else r[col]
+        g = r[m]
+        rows.append({"group": label, "trades": len(g), "net_pnl": round(g["net"].sum(), 0),
+                     "avg_pnl": round(g["net"].mean(), 0) if len(g) else None,
+                     "win_rate_%": round((g["net"] > 0).mean() * 100, 1) if len(g) else None})
+    return pd.DataFrame(rows).set_index("group")

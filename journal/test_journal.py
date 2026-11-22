@@ -78,3 +78,15 @@ def test_zerodha_charges_flat_brokerage_per_order():
     c = add_zerodha_charges(d)
     assert abs(c["brokerageCharges"].sum() - 40) < 1e-9          # Rs 20 per order, split across fills
     assert abs(c.loc[2, "stt"] - 75 * 110 * 0.0015) < 1e-9 and c.loc[0, "stt"] == 0
+
+
+def test_rule_check_flags():
+    from metrics import rule_check
+    rt, _ = rts([T(1, "BUY", 75, 100, "2026-11-20 09:30:00"), T(2, "SELL", 75, 90, "2026-11-20 09:40:00"),
+                 T(3, "BUY", 75, 100, "2026-11-20 09:45:00"), T(4, "SELL", 75, 90, "2026-11-20 09:50:00"),
+                 T(5, "BUY", 75, 100, "2026-11-20 14:00:00"), T(6, "SELL", 75, 120, "2026-11-20 14:30:00")])
+    c = rule_check(rt)
+    assert c.loc["entered before 10:00", "trades"] == 2
+    assert c.loc["entered within 15 min of a loss", "trades"] == 1
+    assert c.loc["entered after 2 losses that day", "trades"] == 1
+    assert c.loc["followed all rules", "trades"] == 1 and c.loc["followed all rules", "net_pnl"] == 1500
