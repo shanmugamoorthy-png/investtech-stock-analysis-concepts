@@ -24,3 +24,7 @@ Data is split 70% first, 30% last by date. Nothing is chosen using the last 30%.
 ## Run
     python run.py --mode index --days 730 --out-dir /content/drive/MyDrive/backtest
     python run.py --demo          # synthetic data, checks the plumbing
+
+## Test your own rule
+    python custom.py --entry orb --range-minutes 15 --stop 30 --target 45 --earliest 10:00 --out-dir /content/drive/MyDrive/backtest
+Options: `--entry orb|prevday`, `--direction both|long|short`, `--timeframe 5|15`, `--max-hold-minutes`, `--latest`, `--max-trades-per-day`. Test a rule once; trying many numbers until one looks good only finds luck.

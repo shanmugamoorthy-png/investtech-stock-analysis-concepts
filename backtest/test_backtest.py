@@ -113,3 +113,24 @@ def test_probe_finds_accepted_format_and_fetch_uses_it(monkeypatch):
     df = data.fetch_rolling(40, "CALL", 0, 15, flag, code, st)
     assert len(df) > 0 and set(["strike", "close"]) <= set(df.columns)
     assert all(b["toDate"] <= str(data.date.today()) for b in seen)
+
+
+def test_fixed_point_stop_and_target():
+    df = _flat_market(); df.loc[5, "high"] = 120.0
+    mk = Market(df, mode="index", cost_points=0, interval=15, stop_pts=10, tgt_pts=15)
+    r = mk.pnl(2, 1)
+    assert r[0] == 15.0 and r[3] == "target"
+    df = _flat_market(); df.loc[4, "low"] = 85.0
+    mk = Market(df, mode="index", cost_points=0, interval=15, stop_pts=10, tgt_pts=15)
+    assert mk.pnl(2, 1)[0] == -10.0
+    mk = Market(df, mode="index", cost_points=0, interval=15, stop_pts=10, tgt_pts=15, max_hold=3)
+    assert mk.pnl(10, 1)[3] == "time" and mk.pnl(10, 1)[2] - mk.pnl(10, 1)[1] == 2
+
+
+def test_orb_n_uses_only_past_bars():
+    from custom import orb_n
+    idx, _ = make_demo(days=40)
+    idx["date"] = idx["time"].dt.date
+    full = orb_n(idx, 1)
+    part = orb_n(idx.iloc[:900].reset_index(drop=True), 1)
+    assert (full[:899] == part[:899]).all()

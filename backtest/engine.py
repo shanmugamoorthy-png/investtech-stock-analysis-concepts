@@ -15,10 +15,14 @@ MIN_TRADES, MIN_PF = 60, 1.15                     # pre-set checks, see README
 
 
 class Market:
-    def __init__(self, df, opt=None, mode="index", cost_points=2.0, slip=0.5):
+    def __init__(self, df, opt=None, mode="index", cost_points=2.0, slip=0.5, interval=15,
+                 stop_pts=None, tgt_pts=None, max_hold=MAX_HOLD, max_per_day=MAX_PER_DAY, last_entry=LAST_ENTRY):
         df = df.sort_values("time").reset_index(drop=True).copy()
         df["date"] = df["time"].dt.date
         self.df, self.mode, self.cost_points, self.slip = df, mode, cost_points, slip
+        self.interval, self.stop_pts, self.tgt_pts = interval, stop_pts, tgt_pts
+        self.max_hold, self.max_per_day, self.last_entry = max_hold, max_per_day, last_entry
+        self.last_bar_start = 15 * 60 + 15 - interval      # the bar that closes at 15:15
         self.o, self.h, self.l, self.c = (df[k].to_numpy(float) for k in ("open", "high", "low", "close"))
         self.time = df["time"].to_numpy()
         self.day = pd.factorize(df["date"])[0]
@@ -39,13 +43,15 @@ class Market:
     def exit_bar(self, i, d):
         """Walk forward from the entry bar. Returns (entry_bar, exit_bar, index_entry, index_exit, reason) or None."""
         e = i + 1
-        if e >= self.n or self.day[e] != self.day[i] or self.minute[e] > LAST_ENTRY:
+        if e >= self.n or self.day[e] != self.day[i] or self.minute[e] > self.last_entry:
             return None
         a = self.atr[i]
-        if not a > 0:
+        if not (a > 0 or (self.stop_pts and self.tgt_pts)):
             return None
         ref = self.o[e]
-        stop, tgt = ref - d * STOP_ATR * a, ref + d * TARGET_ATR * a
+        sd = self.stop_pts if self.stop_pts else STOP_ATR * a
+        td = self.tgt_pts if self.tgt_pts else TARGET_ATR * a
+        stop, tgt = ref - d * sd, ref + d * td
         j = e
         while True:
             hit_stop = self.l[j] <= stop if d == 1 else self.h[j] >= stop
@@ -55,7 +61,7 @@ class Market:
             if hit_tgt:
                 return e, j, ref, tgt, "target"
             nxt = j + 1
-            if nxt >= self.n or self.day[nxt] != self.day[e] or self.minute[nxt] > LAST_BAR_START or nxt - e >= MAX_HOLD:
+            if nxt >= self.n or self.day[nxt] != self.day[e] or self.minute[nxt] > self.last_bar_start or nxt - e >= self.max_hold:
                 return e, j, ref, self.c[j], "time"
             j = nxt
 
@@ -84,7 +90,7 @@ class Market:
 def run_strategy(mk: Market, sig, start_minute):
     trades, busy, per_day = [], -1, {}
     for i in np.flatnonzero(sig):
-        if i < busy or per_day.get(mk.day[i], 0) >= MAX_PER_DAY:
+        if i < busy or per_day.get(mk.day[i], 0) >= mk.max_per_day:
             continue
         e = i + 1
         if e >= mk.n or mk.minute[e] < start_minute:
