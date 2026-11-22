@@ -8,7 +8,7 @@ HOLDOUT = 0.4
 MIN_YEARS_BEAT = 0.6
 
 
-def evaluate(p, cfg: Cfg, draws=500):
+def evaluate(p, cfg: Cfg, draws=500, names=None):
     base = Run(p, cfg)
     stress = Run(p, Cfg(**{**cfg.__dict__, "slippage": max(cfg.slippage, 0.0025), "haircut": 0.30}))
     n = len(base.periods)
@@ -17,7 +17,7 @@ def evaluate(p, cfg: Cfg, draws=500):
     bench = base.benchmark()
     rand = base.random_means(hold, draws)
     rows, series = [], {}
-    for name in SCORES:
+    for name in (names or SCORES):
         pk, pk_s = base.picks(name), stress.picks(name)
         gross, net = base.gross(pk), base.net(pk)
         net_s = stress.net(pk_s)

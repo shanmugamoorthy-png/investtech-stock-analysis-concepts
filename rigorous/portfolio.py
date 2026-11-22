@@ -60,12 +60,16 @@ class Cfg:
     haircut: float = 0.0            # loss assumed on stocks that stop trading while held
     tax: float = 0.208              # 20% short-term capital gains tax + 4% cess
     seed: int = 0
+    k: int = 20                     # stocks held
+    offset: int = 0                 # trade this many trading days after the first of the month
+    cap: float = 0.0                # if set, no single stock counts for more than this monthly gain (0.0 = off)
+    exclude_suspect: bool = False   # leave out stocks with guessed split adjustments or extreme daily moves
 
 
-def month_starts(p: Panel, warmup=260):
+def month_starts(p: Panel, warmup=260, offset=0):
     idx = pd.Series(np.arange(len(p.dates)), index=p.dates)
     first = idx.groupby([p.dates.year, p.dates.month]).first()
-    return [int(i) for i in first.values if i >= warmup]
+    return [min(int(i) + offset, len(p.dates) - 1) for i in first.values if i >= warmup]
 
 
 def eligible(p: Panel, i0, cfg: Cfg):
@@ -74,6 +78,8 @@ def eligible(p: Panel, i0, cfg: Cfg):
     ok &= np.sum(~np.isnan(p.C[j - 252:j + 1]), axis=0) >= 240
     med = np.nanmedian(p.V[j - 59:j + 1], axis=0)
     ok &= np.nan_to_num(med) >= cfg.min_value
+    if cfg.exclude_suspect:
+        ok &= ~p.suspect
     cand = np.flatnonzero(ok)
     return cand[np.argsort(-med[cand])][:cfg.top]
 
@@ -88,7 +94,7 @@ def hold_returns(p: Panel, i0, i1, haircut):
 
 
 def side_costs(cfg: Cfg):
-    pos = cfg.capital / K
+    pos = cfg.capital / cfg.k
     txn = 0.0000297 * 1.18 + 1e-6              # exchange fee with GST, plus SEBI fee
     buy = 0.001 + 0.00015 + txn + cfg.slippage                 # STT 0.1%, stamp duty 0.015%
     sell = 0.001 + txn + 15.34 / pos + cfg.slippage            # STT 0.1%, DP charge Rs 15.34 per stock sold
@@ -99,10 +105,12 @@ class Run:
     """All months of one scenario: who was eligible, what each stock returned."""
     def __init__(self, p: Panel, cfg: Cfg):
         self.p, self.cfg = p, cfg
-        self.starts = month_starts(p)
+        self.starts = month_starts(p, offset=cfg.offset)
         self.periods = [(a, b) for a, b in zip(self.starts[:-1], self.starts[1:])]
         self.elig = [eligible(p, a, cfg) for a, _ in self.periods]
         self.rets = [hold_returns(p, a, b, cfg.haircut) for a, b in self.periods]
+        if cfg.cap:
+            self.rets = [np.minimum(r, cfg.cap) for r in self.rets]
         self.month_end = [p.dates[b] for _, b in self.periods]
 
     def picks(self, name):
@@ -110,7 +118,7 @@ class Run:
         for (a, _), el in zip(self.periods, self.elig):
             s = SCORES[name](self.p.C, a - 1)[el]
             good = np.flatnonzero(np.isfinite(s))
-            out.append(el[good[np.argsort(-s[good])][:K]])
+            out.append(el[good[np.argsort(-s[good])][:self.cfg.k]])
         return out
 
     def gross(self, picks):
@@ -136,7 +144,7 @@ class Run:
         for m in idx:
             el, r = self.elig[m], self.rets[m]
             for d in range(draws):
-                sums[d] += np.nanmean(r[rng.choice(el, size=min(K, len(el)), replace=False)])
+                sums[d] += np.nanmean(r[rng.choice(el, size=min(self.cfg.k, len(el)), replace=False)])
         return sums / max(len(idx), 1)
 
 

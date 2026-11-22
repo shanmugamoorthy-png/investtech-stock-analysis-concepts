@@ -16,6 +16,7 @@ class Panel:
     CF: np.ndarray       # adjusted close, carried forward over gaps
     V: np.ndarray        # traded value in rupees
     last_date: pd.Series  # last day each symbol traded
+    suspect: np.ndarray   # True for stocks with a guessed split adjustment or an extreme daily move left after adjusting
     end: pd.Timestamp
     diag: dict
 
@@ -47,20 +48,22 @@ def adjust(long: pd.DataFrame):
     fac = np.exp(tot - cs)                    # product of later adjustments
     for c in ("open", "high", "low", "close"):
         d[c] = d[c] * fac
-    return d, int(event.sum()), guessed
+    return d, int(event.sum()), guessed, set(d.loc[r.index[(~event) & (r != 1.0)], "symbol"])
 
 
 def build_panel(long: pd.DataFrame) -> Panel:
-    d, n_events, guessed = adjust(long)
+    d, n_events, guessed, guessed_syms = adjust(long)
     dates = pd.DatetimeIndex(sorted(d["date"].unique()))
     wide = {k: d.pivot(index="date", columns="symbol", values=k).reindex(dates) for k in ("open", "close", "value")}
     symbols = wide["close"].columns.to_numpy()
     C = wide["close"].to_numpy(float)
     last = d.groupby("symbol")["date"].max().reindex(symbols)
     ret = pd.DataFrame(C).pct_change(fill_method=None)
-    extreme = int(((ret < -0.5) | (ret > 1.0)).to_numpy().sum())
+    ext = ((ret < -0.5) | (ret > 1.0)).to_numpy()
+    extreme = int(ext.sum())
+    suspect = ext.any(axis=0) | np.isin(symbols, list(guessed_syms))
     diag = {"stocks": len(symbols), "days": len(dates), "split_or_bonus_adjustments": n_events, "adjustments_guessed_from_price_jump": guessed,
             "extreme_daily_moves_after_adjusting": extreme,
             "stocks_that_stopped_trading": int((last < dates[-1] - pd.Timedelta(days=20)).sum())}
     return Panel(dates, symbols, wide["open"].to_numpy(float), C, wide["close"].ffill().to_numpy(float),
-                 wide["value"].to_numpy(float), last, dates[-1], diag)
+                 wide["value"].to_numpy(float), last, suspect, dates[-1], diag)

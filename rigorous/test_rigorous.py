@@ -15,7 +15,7 @@ def panel():
 
 def test_split_is_adjusted_away():
     long = make_long()
-    adj, n, _ = adjust(long)
+    adj, n, _, _ = adjust(long)
     s0 = adj[adj["symbol"] == "S0"].reset_index(drop=True)
     r = s0["close"].pct_change().abs().max()
     raw = long[long["symbol"] == "S0"]["close"].pct_change().abs().max()
@@ -65,6 +65,6 @@ def test_noise_market_passes_nothing(panel):
 
 def test_split_found_even_if_previous_close_is_not_adjusted():
     long = make_long(adjusted_prev=False)
-    adj, n, guessed = adjust(long)
+    adj, n, guessed, syms = adjust(long)
     s0 = adj[adj["symbol"] == "S0"].reset_index(drop=True)
-    assert n == 0 and guessed >= 1 and s0["close"].pct_change().abs().max() < 0.15
+    assert n == 0 and guessed >= 1 and "S0" in syms and s0["close"].pct_change().abs().max() < 0.15

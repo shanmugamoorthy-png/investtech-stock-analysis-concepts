@@ -27,3 +27,7 @@ The first run downloads about 2,000 daily files from NSE (resumable; run again i
 
 ## Known limits
 A symbol that changes name looks like a delisting plus a new listing. Delisting losses are unknown, hence the stress case. Position sizes assume Rs 10 lakh across 20 stocks. Dividends are left out, which understates buy-and-hold returns.
+
+## Audit of a passing rule
+    python audit.py --out-dir /content/drive/MyDrive/rigorous
+Reruns the Momentum 12-1 rule under ten different assumptions (10 or 30 stocks, other stock-list sizes, trading a day or ten days later, higher slippage, capping huge single-month gains, leaving out stocks with suspect price data), shows results by calendar year, and lists the biggest single-stock gains it held so data errors can be spotted.
