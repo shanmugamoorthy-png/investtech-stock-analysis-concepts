@@ -134,3 +134,17 @@ def test_orb_n_uses_only_past_bars():
     full = orb_n(idx, 1)
     part = orb_n(idx.iloc[:900].reset_index(drop=True), 1)
     assert (full[:899] == part[:899]).all()
+
+
+def test_return_mode_is_percent_of_price():
+    df = _flat_market(); df.loc[5, "high"] = 120.0
+    mk = Market(df, mode="return", cost_bps=8.0, interval=15, stop_pts=10, tgt_pts=15)
+    r = mk.pnl(2, 1)
+    assert r[0] == pytest.approx(15 / 100 * 1e4 - 8.0)
+
+
+def test_stocks_demo_runs():
+    from stocks import evaluate_many
+    mk = {f"D{s}": Market(make_demo(days=120, seed=s)[0], None, "return", cost_bps=8.0) for s in range(2)}
+    res, trades, cut = evaluate_many(mk, draws=100)
+    assert len(res) == 12 and len(trades) > 0

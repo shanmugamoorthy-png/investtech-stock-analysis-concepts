@@ -53,12 +53,12 @@ def to_time(epoch, clock: str) -> pd.Series:
     return pd.Series(pd.to_datetime(np.asarray(epoch, dtype="int64") + CLOCKS[clock], unit="s"))
 
 
-def fetch_index(days: int, interval: int = 15) -> pd.DataFrame:
+def fetch_index(days: int, interval: int = 15, sec="13", seg="IDX_I", instr="INDEX") -> pd.DataFrame:
     rows, end = [], date.today()
     start_all = end - timedelta(days=days)
     while end >= start_all:
         start = max(start_all, end - timedelta(days=84))
-        body = {"securityId": "13", "exchangeSegment": "IDX_I", "instrument": "INDEX", "interval": interval,
+        body = {"securityId": str(sec), "exchangeSegment": seg, "instrument": instr, "interval": interval,
                 "oi": False, "fromDate": f"{start} 09:15:00", "toDate": f"{end} 15:30:00"}
         j = _post("intraday", body)
         if j and j.get("timestamp"):
@@ -66,7 +66,7 @@ def fetch_index(days: int, interval: int = 15) -> pd.DataFrame:
         time.sleep(0.4)
         end = start - timedelta(days=1)
     if not rows:
-        sys.exit("No index candles returned.")
+        return pd.DataFrame()
     d = pd.concat(rows, ignore_index=True).drop_duplicates("timestamp").sort_values("timestamp")
     return d.reset_index(drop=True)
 
@@ -140,7 +140,10 @@ def load_all(days, interval, out_dir, offsets, expiry_flag, expiry_code, want_op
     p = os.path.join(out_dir, f"index_{interval}m.csv")
     if refresh or not os.path.exists(p):
         print("Fetching NIFTY index candles ...")
-        fetch_index(days, interval).to_csv(p, index=False)
+        got = fetch_index(days, interval)
+        if got.empty:
+            sys.exit("No index candles returned.")
+        got.to_csv(p, index=False)
     idx = pd.read_csv(p)
     clock = detect_clock(idx["timestamp"])
     print(f"Index candles: {len(idx)} bars, clock reading = {clock}")

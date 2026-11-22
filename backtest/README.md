@@ -28,3 +28,7 @@ Data is split 70% first, 30% last by date. Nothing is chosen using the last 30%.
 ## Test your own rule
     python custom.py --entry orb --range-minutes 15 --stop 30 --target 45 --earliest 10:00 --out-dir /content/drive/MyDrive/backtest
 Options: `--entry orb|prevday`, `--direction both|long|short`, `--timeframe 5|15`, `--max-hold-minutes`, `--latest`, `--max-trades-per-day`. Test a rule once; trying many numbers until one looks good only finds luck.
+
+## F&O stocks
+    python stocks.py --limit 50 --out-dir /content/drive/MyDrive/backtest_stocks
+Runs the same six strategies (and the same pass checks) over a random sample of today's F&O stocks, trading the stock's own price move, with results in basis points per trade after an 8 bp round-trip cost. Stock options would add wider spreads and time decay, so they would do worse. Today's F&O list over-represents stocks that grew into it (survivorship).

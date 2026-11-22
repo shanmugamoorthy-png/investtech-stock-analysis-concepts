@@ -16,11 +16,11 @@ MIN_TRADES, MIN_PF = 60, 1.15                     # pre-set checks, see README
 
 class Market:
     def __init__(self, df, opt=None, mode="index", cost_points=2.0, slip=0.5, interval=15,
-                 stop_pts=None, tgt_pts=None, max_hold=MAX_HOLD, max_per_day=MAX_PER_DAY, last_entry=LAST_ENTRY):
+                 stop_pts=None, tgt_pts=None, max_hold=MAX_HOLD, max_per_day=MAX_PER_DAY, last_entry=LAST_ENTRY, cost_bps=8.0):
         df = df.sort_values("time").reset_index(drop=True).copy()
         df["date"] = df["time"].dt.date
         self.df, self.mode, self.cost_points, self.slip = df, mode, cost_points, slip
-        self.interval, self.stop_pts, self.tgt_pts = interval, stop_pts, tgt_pts
+        self.interval, self.stop_pts, self.tgt_pts, self.cost_bps = interval, stop_pts, tgt_pts, cost_bps
         self.max_hold, self.max_per_day, self.last_entry = max_hold, max_per_day, last_entry
         self.last_bar_start = 15 * 60 + 15 - interval      # the bar that closes at 15:15
         self.o, self.h, self.l, self.c = (df[k].to_numpy(float) for k in ("open", "high", "low", "close"))
@@ -73,6 +73,8 @@ class Market:
         e, j, ref, px, reason = x
         if self.mode == "index":
             return d * (px - ref) - self.cost_points, e, j, reason
+        if self.mode == "return":      # result as basis points (1/100 of a percent) of the entry price
+            return d * (px - ref) / ref * 1e4 - self.cost_bps, e, j, reason
         side = "CALL" if d == 1 else "PUT"
         st, cl, op0, k0 = self.opt[side]
         entry, strike = op0[e], st[k0, e]
