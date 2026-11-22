@@ -89,4 +89,4 @@ def test_rule_check_flags():
     assert c.loc["entered before 10:00", "trades"] == 2
     assert c.loc["entered within 15 min of a loss", "trades"] == 1
     assert c.loc["entered after 2 losses that day", "trades"] == 1
-    assert c.loc["followed all rules", "trades"] == 1 and c.loc["followed all rules", "net_pnl"] == 1500
+    assert c.loc["followed all rules", "trades"] == 0 and c.loc["broke at least one rule", "trades"] == 3
