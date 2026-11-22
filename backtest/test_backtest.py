@@ -85,3 +85,31 @@ def test_pure_noise_does_not_pass_in_index_mode():
     idx, opt = make_demo(days=300, seed=3)
     res, trades, _ = evaluate(Market(idx, opt, "index", 2.0), draws=200)
     assert (res["verdict"] == "PASSES all checks").sum() == 0 and len(trades) > 0
+
+
+def test_probe_finds_accepted_format_and_fetch_uses_it(monkeypatch):
+    import data
+    seen = []
+
+    class R:
+        def __init__(self, code, js): self.status_code, self._js, self.text = code, js, ""
+        def json(self): return self._js
+
+    def fake_post(url, json=None, headers=None, timeout=0):
+        b = json
+        ok = b["expiryFlag"] == "WEEK" and b["expiryCode"] == 1 and isinstance(b["interval"], str) and isinstance(b["securityId"], int) and "strike" in b["requiredData"]
+        seen.append(b)
+        if not ok:
+            return R(400, {"errorCode": "DH-905"})
+        t = list(range(1700000000, 1700000000 + 15 * 60 * 4, 900))
+        return R(200, {"data": {"ce": {"timestamp": t, "open": [1] * 4, "high": [1] * 4, "low": [1] * 4, "close": [1] * 4, "strike": [24000] * 4, "spot": [24010] * 4}, "pe": None}})
+
+    monkeypatch.setattr(data.requests, "post", fake_post)
+    monkeypatch.setattr(data, "_post", lambda path, body: fake_post(None, json=body).json())
+    monkeypatch.setattr(data.time, "sleep", lambda s: None)
+    monkeypatch.setenv("DHAN_ACCESS_TOKEN", "x")
+    flag, code, st = data.probe_rolling(15, "WEEK", 1)
+    assert (flag, code) == ("WEEK", 1) and st["interval_str"] and st["secid_int"]
+    df = data.fetch_rolling(40, "CALL", 0, 15, flag, code, st)
+    assert len(df) > 0 and set(["strike", "close"]) <= set(df.columns)
+    assert all(b["toDate"] <= str(data.date.today()) for b in seen)
